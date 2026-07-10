@@ -1,0 +1,22 @@
+{% extends "base.html" %} {% block title %}{{ profile_user.full_name }} · Ethiogram{% endblock %} {% block content %}
+
+{{ profile_user.full_name }}
+@{{ profile_user.username }}
+{% if profile_user.bio %}
+{{ profile_user.bio }}
+{% endif %}
+{% if profile_user.id == current_user.id %}
+Edit profile
+{% else %}
+Message
+{% endif %}
+{% if not posts %}
+No posts yet.
+{% endif %} {% for post in posts %}
+
+{{ profile_user.full_name }}
+{{ post.timestamp.strftime('%b %d, %Y · %H:%M') }}
+{% if post.content %}{{ post.content }}{% endif %} {% if post.image %}{% endif %}
+👍 {{ post.like_count() }} 💬 {{ post.comment_count() }}
+{% endfor %}
+{% endblock %}
