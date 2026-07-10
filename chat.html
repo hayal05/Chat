@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}Chat · Ethiogram{% endblock %}
+{% block wrap_class %}{% endblock %}
+{% block content %}
+<div class="chat-shell">
+  <div class="chat-sidebar">
+    <div class="chat-search">
+      <input type="text" id="userSearch" placeholder="Search people by username…" value="{{ search }}">
+    </div>
+
+    {% if search_results %}
+    <div class="search-results">
+      {% for u in search_results %}
+      <a class="convo-item" href="{{ url_for('chat', user_id=u.id) }}">
+        <img src="{{ u.avatar_url() }}" alt="">
+        <div class="convo-meta">
+          <div class="uname">{{ u.full_name }}</div>
+          <div class="snippet">@{{ u.username }}</div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="convo-list" id="convoList">
+      {% for c in conversations %}
+        {% set other = c.other_user(current_user.id) %}
+        {% set lm = c.last_message() %}
+        <a class="convo-item {% if active_convo and active_convo.id == c.id %}active{% endif %}" href="{{ url_for('chat', user_id=other.id) }}">
+          <img src="{{ other.avatar_url() }}" alt="">
+          <div class="convo-meta">
+            <div class="top-row">
+              <span class="uname">{{ other.full_name }}</span>
+              {% set unread = c.unread_count(current_user.id) %}
+              {% if unread > 0 %}<span class="badge">{{ unread }}</span>{% endif %}
+            </div>
+            <div class="snippet">{{ lm.content if lm else 'Say hello 👋' }}</div>
+          </div>
+        </a>
+      {% else %}
+        <div class="empty-state">No conversations yet. Search a username to start one.</div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="chat-main">
+    {% if active_other %}
+      <div class="chat-header">
+        <img src="{{ active_other.avatar_url() }}" alt="">
+        <div>
+          <div style="font-weight:600;">{{ active_other.full_name }}</div>
+          <div style="font-size:12px; color:var(--text-muted);">@{{ active_other.username }}</div>
+        </div>
+      </div>
+      <div class="messages" id="messages">
+        {% for m in messages %}
+          <div class="msg-row {% if m.sender_id == current_user.id %}mine{% else %}theirs{% endif %}">
+            <div class="bubble">{{ m.content }}<span class="t">{{ m.timestamp.strftime('%H:%M') }}</span></div>
+          </div>
+        {% endfor %}
+      </div>
+      <div class="typing-indicator" id="typingIndicator" style="visibility:hidden;">{{ active_other.username }} is typing…</div>
+      <form class="composer-bar" id="chatForm">
+        <input type="text" id="chatInput" placeholder="Message @{{ active_other.username }}" autocomplete="off" required>
+        <button type="submit">➤</button>
+      </form>
+
+      <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+      <script>
+        const CONVO_ID = {{ active_convo.id }};
+        const MY_ID = {{ current_user.id }};
+        const MY_USERNAME = {{ current_user.username|tojson }};
+        const OTHER_USERNAME = {{ active_other.username|tojson }};
+      </script>
+      <script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+    {% else %}
+      <div class="chat-empty">
+        <span class="weave-mark">
+          <svg width="60" height="60" viewBox="0 0 64 64"><g fill="none" stroke="#DCE7E1" stroke-width="3"><path d="M32 6 L58 32 L32 58 L6 32 Z"/><path d="M32 20 L44 32 L32 44 L20 32 Z"/></g></svg>
+        </span>
+        <div>Pick a conversation, or search a username to start chatting.</div>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  let searchTimeout;
+  document.getElementById('userSearch').addEventListener('input', (e) => {
+    clearTimeout(searchTimeout);
+    const q = e.target.value.trim();
+    searchTimeout = setTimeout(() => {
+      const url = new URL(window.location.href);
+      url.searchParams.set('q', q);
+      window.location.href = url.toString();
+    }, 500);
+  });
+</script>
+{% endblock %}
