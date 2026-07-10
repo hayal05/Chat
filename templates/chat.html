@@ -1,0 +1,27 @@
+{% extends "base.html" %} {% block title %}Chat · Ethiogram{% endblock %} {% block wrap_class %}{% endblock %} {% block content %}
+{{ search }}
+{% if search_results %}
+{% for u in search_results %} 
+{{ u.full_name }}
+@{{ u.username }}
+{% endfor %}
+{% endif %}
+{% for c in conversations %} {% set other = c.other_user(current_user.id) %} {% set lm = c.last_message() %} 
+{{ other.full_name }} {% set unread = c.unread_count(current_user.id) %} {% if unread > 0 %}{{ unread }}{% endif %}
+{{ lm.content if lm else 'Say hello 👋' }}
+{% else %}
+No conversations yet. Search a username to start one.
+{% endfor %}
+{% if active_other %}
+
+{{ active_other.full_name }}
+@{{ active_other.username }}
+{% for m in messages %}
+{{ m.content }}{{ m.timestamp.strftime('%H:%M') }}
+{% endfor %}
+Message @{{ active_other.username }}
+ ➤
+{% else %}
+Pick a conversation, or search a username to start chatting.
+{% endif %}
+{% endblock %} {% block scripts %} {% endblock %}
