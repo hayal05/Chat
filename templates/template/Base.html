@@ -1,9 +1,0 @@
-{% block head %}{% endblock %} {% if current_user.is_authenticated %}
- Ethiogram
-Feed Chat Profile
- Log out
-{% endif %}
-{% with messages = get_flashed_messages(with_categories=true) %} {% if messages %} {% for category, msg in messages %}
-{{ msg }}
-{% endfor %} {% endif %} {% endwith %} {% block content %}{% endblock %}
-{% block scripts %}{% endblock %}
