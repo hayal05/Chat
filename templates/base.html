@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Ethiogram{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block head %}{% endblock %}
+</head>
+<body>
+  {% if current_user.is_authenticated %}
+  <div class="topnav">
+    <a class="brand" href="{{ url_for('feed') }}">
+      <span class="weave-mark">
+        <svg width="26" height="26" viewBox="0 0 64 64"><g fill="none" stroke="#F3F8F5" stroke-width="4"><path d="M32 6 L58 32 L32 58 L6 32 Z"/><path d="M32 20 L44 32 L32 44 L20 32 Z"/></g></svg>
+      </span>
+      Ethiogram
+    </a>
+    <nav>
+      <a class="nav-link {% if request.endpoint=='feed' %}active{% endif %}" href="{{ url_for('feed') }}">Feed</a>
+      <a class="nav-link {% if request.endpoint=='chat' %}active{% endif %}" href="{{ url_for('chat') }}">Chat</a>
+      <a class="nav-link {% if request.endpoint=='profile' and profile_user and profile_user.id==current_user.id %}active{% endif %}" href="{{ url_for('profile', user_id=current_user.id) }}">Profile</a>
+    </nav>
+    <div class="nav-user">
+      <img src="{{ current_user.avatar_url() }}" alt="">
+      <a class="nav-link" href="{{ url_for('logout') }}">Log out</a>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="{% block wrap_class %}page-wrap{% endblock %}">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, msg in messages %}
+          <div class="flash {{ category }}">{{ msg }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </div>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>
