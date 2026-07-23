@@ -1,0 +1,71 @@
+<div class="post card" data-post-id="{{ post.id }}">
+  <div class="post-header">
+    <a href="{{ url_for('profile', username=post.author.username) }}">
+      <img src="{{ post.author.avatar_url() }}" class="post-avatar" alt="{{ post.author.username }}">
+    </a>
+    <div>
+      <a href="{{ url_for('profile', username=post.author.username) }}" class="post-author">{{ post.author.username }}</a>
+      <div class="post-time">{{ post.created_at.strftime('%b %d, %Y · %I:%M %p') }}</div>
+    </div>
+    {% if post.author.id == current_user.id %}
+    <form method="POST" action="{{ url_for('delete_post', post_id=post.id) }}" onsubmit="return confirm('Delete this post?');">
+      <button type="submit" class="post-delete">Delete</button>
+    </form>
+    {% endif %}
+  </div>
+
+  {% if post.content %}
+  <div class="post-content">{{ post.content }}</div>
+  {% endif %}
+
+  {% if post.image %}
+  <img src="{{ url_for('static', filename='uploads/' + post.image) }}" class="post-image" alt="Post image">
+  {% endif %}
+
+  <div class="post-stats">
+    <span class="likes-stat">
+      <span class="mini-heart"><svg viewBox="0 0 24 24"><path d="M12 21s-7-4.35-9.5-8.5C.5 8.5 3 4 7 4c2 0 3.5 1 5 3 1.5-2 3-3 5-3 4 0 6.5 4.5 4.5 8.5C19 16.65 12 21 12 21Z"/></svg></span>
+      <span class="like-count">{{ post.likes.count() }}</span>
+    </span>
+    <span>{{ post.comments.count() }} comments · {{ post.shares.count() }} shares</span>
+  </div>
+
+  <div class="post-actions">
+    <form method="POST" action="{{ url_for('like_post', post_id=post.id) }}" class="like-form" style="flex:1;">
+      <button type="submit" class="post-action-btn {{ 'liked' if post.liked_by(current_user) }}">
+        <svg viewBox="0 0 24 24" fill="{{ 'currentColor' if post.liked_by(current_user) else 'none' }}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.35-9.5-8.5C.5 8.5 3 4 7 4c2 0 3.5 1 5 3 1.5-2 3-3 5-3 4 0 6.5 4.5 4.5 8.5C19 16.65 12 21 12 21Z"/></svg>
+        Like
+      </button>
+    </form>
+
+    <button type="button" class="post-action-btn toggle-comments" style="flex:1;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Comment
+    </button>
+
+    <form method="POST" action="{{ url_for('share_post', post_id=post.id) }}" style="flex:1;">
+      <button type="submit" class="post-action-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M16 6l-4-4-4 4"/><path d="M12 2v14"/></svg>
+        Share
+      </button>
+    </form>
+  </div>
+
+  <div class="comments-section" style="display:none;">
+    {% for comment in post.comments %}
+    <div class="comment">
+      <a href="{{ url_for('profile', username=comment.author.username) }}">
+        <img src="{{ comment.author.avatar_url() }}" class="comment-avatar" alt="{{ comment.author.username }}">
+      </a>
+      <div class="comment-bubble">
+        <a href="{{ url_for('profile', username=comment.author.username) }}" class="comment-author">{{ comment.author.username }}</a>{{ comment.content }}
+      </div>
+    </div>
+    {% endfor %}
+
+    <form method="POST" action="{{ url_for('comment_post', post_id=post.id) }}" class="comment-form">
+      <input type="text" name="content" placeholder="Write a comment..." required maxlength="500">
+      <button type="submit">Post</button>
+    </form>
+  </div>
+</div>
