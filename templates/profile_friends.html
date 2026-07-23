@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}{{ profile_user.username }}'s friends · Sabina{% endblock %}
+{% block content %}
+<div class="page">
+
+  <div class="card" style="padding:18px 20px;margin-bottom:16px;display:flex;align-items:center;gap:12px;">
+    <a href="{{ url_for('profile', username=profile_user.username) }}" style="display:flex;align-items:center;gap:10px;">
+      <img src="{{ profile_user.avatar_url() }}" alt="{{ profile_user.username }}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;">
+      <span style="font-weight:800;font-size:17px;">{{ profile_user.username }}'s friends</span>
+    </a>
+    <span class="friends-count-pill">{{ friends|length }}</span>
+  </div>
+
+  {% if friends %}
+  <div class="card friends-section">
+    {% for friend in friends %}
+    <div class="friend-row">
+      <a href="{{ url_for('profile', username=friend.username) }}" class="friend-row-user">
+        <img src="{{ friend.avatar_url() }}" alt="{{ friend.username }}">
+        <span class="conv-name">{{ friend.username }}</span>
+      </a>
+      <div class="friend-row-actions">
+        <a href="{{ url_for('conversation', username=friend.username) }}" class="btn-secondary" style="padding:8px 16px;">Message</a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="card empty-state">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    <h3>No friends yet</h3>
+    <p>{{ profile_user.username }} hasn't added any friends.</p>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}
