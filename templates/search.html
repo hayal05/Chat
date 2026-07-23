@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Search{% if query %} · "{{ query }}"{% endif %} · Sabina{% endblock %}
+{% block content %}
+<div class="page">
+
+  {% if not query %}
+  <div class="card empty-state">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+    <h3>Search Sabina</h3>
+    <p>Find people and posts by typing in the search bar above.</p>
+  </div>
+  {% else %}
+
+  <div class="card friends-section">
+    <h3>People {% if users %}<span class="friends-count-pill">{{ users|length }}</span>{% endif %}</h3>
+    {% for user in users %}
+    <div class="friend-row">
+      <a href="{{ url_for('profile', username=user.username) }}" class="friend-row-user">
+        <img src="{{ user.avatar_url() }}" alt="{{ user.username }}">
+        <span class="conv-name">{{ user.username }}</span>
+      </a>
+      <div class="friend-row-actions">
+        <a href="{{ url_for('profile', username=user.username) }}" class="btn-secondary" style="padding:8px 16px;">View profile</a>
+      </div>
+    </div>
+    {% else %}
+    <div style="padding:16px;color:var(--ink-soft);font-size:14px;">No people found for "{{ query }}".</div>
+    {% endfor %}
+  </div>
+
+  <div class="search-posts-heading">Posts</div>
+  {% if posts %}
+    {% for post in posts %}
+      {% include "_post.html" %}
+    {% endfor %}
+  {% else %}
+    <div class="card empty-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <h3>No posts found</h3>
+      <p>No posts match "{{ query }}".</p>
+    </div>
+  {% endif %}
+
+  {% endif %}
+</div>
+{% endblock %}
