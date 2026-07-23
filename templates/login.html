@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Log in · Sabina{% endblock %}
+{% block content %}
+<div class="auth-shell">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="logo-mark">S</div>
+      <h1>Welcome back</h1>
+      <p>Log in to keep up with your friends on Sabina.</p>
+    </div>
+
+    <form method="POST" action="{{ url_for('login') }}">
+      <div class="field">
+        <label for="identifier">Username or email</label>
+        <input type="text" id="identifier" name="identifier" placeholder="Username or email" required autofocus>
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" placeholder="Your password" required>
+      </div>
+      <button type="submit" class="btn-primary">Log in</button>
+    </form>
+
+    <p class="auth-switch">New to Sabina? <a href="{{ url_for('register') }}">Create an account</a></p>
+  </div>
+</div>
+{% endblock %}
