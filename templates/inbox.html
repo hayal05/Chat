@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Inbox · Sabina{% endblock %}
+{% block content %}
+<div class="wide-page">
+  <div class="inbox-layout">
+    <div class="conv-list card">
+      <h3>Messages</h3>
+      {% for partner, last_msg, unread in conversations %}
+      <a href="{{ url_for('conversation', username=partner.username) }}" class="conv-item">
+        <img src="{{ partner.avatar_url() }}" alt="{{ partner.username }}">
+        <div>
+          <div class="conv-name">{{ partner.username }}</div>
+          <div class="conv-preview">{{ last_msg.body if last_msg else "" }}</div>
+        </div>
+        {% if unread > 0 %}<span class="conv-unread">{{ unread }}</span>{% endif %}
+      </a>
+      {% else %}
+      <div style="padding:16px;color:var(--ink-soft);font-size:14px;">No conversations yet.</div>
+      {% endfor %}
+
+      <div class="new-msg-select">
+        <select onchange="if(this.value) window.location.href=this.value;">
+          <option value="">Start new conversation...</option>
+          {% for u in all_users %}
+          <option value="{{ url_for('conversation', username=u.username) }}">{{ u.username }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div class="card" style="display:flex;align-items:center;justify-content:center;min-height:60vh;">
+      <div class="empty-state">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6h18v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6Z"/><path d="m3 6 9 7 9-7"/></svg>
+        <h3>Your messages</h3>
+        <p>Select a conversation or start a new one.</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
