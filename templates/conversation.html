@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block title %}{{ partner.username }} · Sabina Inbox{% endblock %}
+{% block content %}
+<div class="wide-page">
+  <div class="inbox-layout">
+    <div class="conv-list card">
+      <h3>Messages</h3>
+      <a href="{{ url_for('inbox') }}" class="conv-item">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+        <span class="conv-name">Back to all messages</span>
+      </a>
+    </div>
+
+    <div class="card chat-window">
+      <div class="chat-header">
+        <img src="{{ partner.avatar_url() }}" alt="{{ partner.username }}">
+        <a href="{{ url_for('profile', username=partner.username) }}" style="font-weight:700;">{{ partner.username }}</a>
+      </div>
+
+      <div class="chat-messages" id="chat-messages"
+           data-partner="{{ partner.username }}"
+           data-last-id="{{ messages[-1].id if messages else 0 }}">
+        {% for msg in messages %}
+        <div class="msg-bubble {{ 'mine' if msg.sender_id == current_user.id else 'theirs' }}" data-id="{{ msg.id }}">
+          {{ msg.body }}
+          <span class="msg-time">{{ msg.created_at.strftime('%I:%M %p').lstrip('0') }}</span>
+        </div>
+        {% else %}
+        <div class="chat-empty-hint" style="margin:auto;color:var(--ink-soft);font-size:14px;">Say hello to {{ partner.username }}!</div>
+        {% endfor %}
+      </div>
+
+      <form id="chat-form" class="chat-input" autocomplete="off">
+        <input type="text" name="body" id="chat-input-field" placeholder="Type a message..." required autocomplete="off">
+        <button type="submit">
+          <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+(function () {
+  var chatBox = document.getElementById('chat-messages');
+  var form = document.getElementById('chat-form');
+  var input = document.getElementById('chat-input-field');
+  if (!chatBox || !form) return;
+
+  var partner = chatBox.dataset.partner;
+  var lastId = parseInt(chatBox.dataset.lastId, 10) || 0;
+
+  function scrollToBottom() {
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
+  scrollToBottom();
+
+  function appendMessage(msg, mine) {
+    var hint = chatBox.querySelector('.chat-empty-hint');
+    if (hint) hint.remove();
+    var bubble = document.createElement('div');
+    bubble.className = 'msg-bubble ' + (mine ? 'mine' : 'theirs');
+    bubble.dataset.id = msg.id;
+    bubble.textContent = msg.body + ' ';
+    var time = document.createElement('span');
+    time.className = 'msg-time';
+    time.textContent = msg.created_at;
+    bubble.appendChild(time);
+    chatBox.appendChild(bubble);
+    lastId = Math.max(lastId, msg.id);
+    scrollToBottom();
+  }
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var body = input.value.trim();
+    if (!body) return;
+    input.value = '';
+    input.disabled = true;
+
+    var data = new FormData();
+    data.append('body', body);
+
+    fetch('/inbox/' + encodeURIComponent(partner) + '/send', {
+      method: 'POST',
+      body: data,
+      credentials: 'same-origin'
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (msg) {
+        if (msg && msg.id) appendMessage(msg, true);
+      })
+      .catch(function () { /* keep quiet, poll will reconcile */ })
+      .finally(function () {
+        input.disabled = false;
+        input.focus();
+      });
+  });
+
+  function poll() {
+    fetch('/inbox/' + encodeURIComponent(partner) + '/poll?after=' + lastId, {
+      credentials: 'same-origin'
+    })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (data) {
+        if (!data || !data.messages) return;
+        data.messages.forEach(function (msg) {
+          if (msg.id <= lastId) return;
+          var mine = document.querySelector('.msg-bubble[data-id="' + msg.id + '"]');
+          if (mine) { lastId = Math.max(lastId, msg.id); return; } // already rendered locally
+          appendMessage(msg, false);
+        });
+      })
+      .catch(function () { /* ignore transient errors, try again next tick */ });
+  }
+
+  setInterval(poll, 3000);
+})();
+</script>
+{% endblock %}
