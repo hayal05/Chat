@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Edit profile · Sabina{% endblock %}
+{% block content %}
+<div class="page">
+  <div class="card" style="padding:24px;">
+    <h2 style="margin-top:0;color:var(--sabina-orange-dark);">Edit your profile</h2>
+    <form method="POST" enctype="multipart/form-data">
+      <div class="field">
+        <label>Profile picture</label>
+        <div style="display:flex;align-items:center;gap:14px;">
+          <img src="{{ current_user.avatar_url() }}" style="width:64px;height:64px;border-radius:50%;object-fit:cover;">
+          <input type="file" name="avatar" accept="image/*">
+        </div>
+      </div>
+      <div class="field">
+        <label for="bio">Bio</label>
+        <textarea id="bio" name="bio" rows="3" maxlength="200" placeholder="Tell people about yourself...">{{ current_user.bio }}</textarea>
+      </div>
+      <button type="submit" class="btn-primary" style="width:auto;padding:10px 24px;">Save changes</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
